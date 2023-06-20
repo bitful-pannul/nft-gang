@@ -45,8 +45,12 @@
     ::  assert signatures are correct
     ?>  %+  levy  ~(tap py sigs.action)
         |=  [[=address =id] =sig]
-        =((recover typed-message sig) address)
-        ::  scry item-id, assert holder
+        ?&  =((recover typed-message sig) address)
+            ::  scry item-id, assert holder, source & metadata
+            =+  (need (scry-state id))
+            =/  item  (husk nft - `nft-contract `address)
+            =(collection.noun.gang metadata.noun.item)
+        ==
     [call.action^~ [~ ~ ~ ~]]
   ::
       %execute
