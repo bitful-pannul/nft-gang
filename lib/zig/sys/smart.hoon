@@ -1,0 +1,1 @@
+../../../../uqbar-core/lib/zig/sys/smart.hoon
