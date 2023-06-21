@@ -1,9 +1,9 @@
-::
-::  tests for con/nft-gang.hoon
+::  
+::  tests for con/nftgang.hoon
 ::  account abstraction!
 /+  *test, *transaction-sim, bip32
-/=  gang-lib  /con/lib/nft-gang
-/*  gang-contract  %jam  /con/compiled/nft-gang/jam
+/=  gang-lib  /con/lib/nftgang
+/*  gang-contract  %jam  /con/compiled/nftgang/jam
 /*  nft-contract  %jam  /con/compiled/nft/jam
 |%
 ::
@@ -40,9 +40,9 @@
     (hash-data id.p:pact id.p:pact default-town-id 0)
   ++  pact
     ^-  item:smart
-    :*  %|  item-id
-        0x9876.5432  ::  source
-        0x9876.5432  ::  holder
+    :*  %|  (hash-pact:smart 0x1234.5678 0x1234.5678 default-town-id code)
+        0x1234.5678  ::  source
+        0x1234.5678  ::  holder
         default-town-id
         [- +]:code
         ~
@@ -63,7 +63,7 @@
         id.p:pact
         id.p:pact
         default-town-id
-        0  %nft-gang
+        0  %nftgang
         state
     ==
   --
@@ -160,9 +160,10 @@
 ++  state
   %-  make-chain-state
   :~  pact:gang
-      uninitialized-pact:gang
-      (our:gang [id.p:metadata:gang-1 2 0])
+      ::  uninitialized-pact:gang
+      (our:gang [id.p:metadata:gang-1 2 5])
       (account:zigs id.p:pact:gang 1.000.000 ~)
+      pact:nft
       metadata:gang-1
       item-1:gang-1
       item-2:gang-1
@@ -181,6 +182,8 @@
 ++  get-signed-transaction
   |=  calls=(list call:smart)
   ^-  transaction:smart
+  ~&  "zigs pact: {<id.p:pact:zigs>}"
+  ~&  "zigs: accout {<(account:zigs id.p:pact:zigs 1.000.000 ~)>}"
   =/  my-call=call:smart
     :+  id.p:pact:gang
       0x0
@@ -192,7 +195,7 @@
       execute-jold-hash:gang-lib           :: type-hash
     :^    calls                            :: msg: [(list call) collection nonce deadline]
         id.p:metadata:gang-1
-      nonce=1
+      nonce=6
     deadline=1.000
   =/  hash  `@uvI`(shag:smart typed-message)
   :+  fake-sig
@@ -200,31 +203,30 @@
         item-id:gang
         ::  sig map
         %-  make-pmap:smart
-        :~  :-  [addr-1:zigs item-1:gang-1]
+        :~  :-  [addr-1:zigs id.p:item-1:gang-1]
             %+  ecdsa-raw-sign:secp256k1:secp:crypto
             hash  priv-1:zigs
-            :-  [addr-2:zigs item-2:gang-1]
+            :-  [addr-2:zigs id.p:item-2:gang-1]
             %+  ecdsa-raw-sign:secp256k1:secp:crypto
             hash  priv-2:zigs
-            :-  [addr-3:zigs item-3:gang-1]
+            :-  [addr-3:zigs id.p:item-3:gang-1]
             %+  ecdsa-raw-sign:secp256k1:secp:crypto
             hash  priv-3:zigs
         ==
-        ::
         deadline=1.000
         my-call
     ==
-  [*caller:smart ~ id.p:pact:gang [1 200.000] default-town-id 0]
+  [*caller:smart ~ id.p:pact:gang [1 30.000] default-town-id 0]
 ::
 ::  tests for %give
 ::
 ++  test-zz-basic-give  ^-  test-txn
-   =/  tx
-     %-  get-signed-transaction
-     ^-  (list call:smart)
-     :_  ~                              
-     :+  id.p:pact:zigs  0x0
-     [%give 0xdead.beef 500.000 (id:zigs id.p:pact:gang)]
+  =/  tx
+    %-  get-signed-transaction
+    ^-  (list call:smart)
+    :_  ~                              
+    :+  id.p:pact:zigs  0x0
+    [%give 0xdead.beef 500.000 (id:zigs id.p:pact:gang)]
  :^    chain
      [sequencer default-town-id batch=1 eth-block-height=999]
    tx
@@ -235,11 +237,44 @@
      %-  make-chain-state
      :~  (account:zigs id.p:pact:gang 500.000 ~)
          (account 0xdead.beef 500.000 ~):zigs
-         (our:gang [id.p:metadata:gang-1 2 1])
+         (our:gang [id.p:metadata:gang-1 2 6])
      ==
      burned=`~
      events=`~
  ==
+::
+::  ++  test-zz-zigs-give  ^-  test-txn
+::    =/  =calldata:smart
+::      [%give addr-2:zigs 1.000 (id addr-1):zigs]
+::    =/  tx=transaction:smart  
+::      :+  fake-sig 
+::        calldata
+::      [caller-1 ~ id.p:pact:zigs [1 200.000] default-town-id 0]
+::    :^    chain
+::        [sequencer default-town-id batch=1 eth-block-height=0]
+::      tx
+::    :*  gas=~  ::  we don't care
+::        errorcode=`%0
+::        ::  assert correct modified state
+::        :-  ~
+::        %-  make-chain-state
+::        :~  (account addr-1 299.999.000 [addr-2 1.000.000]^~):zigs
+::            (account addr-2 200.001.000 ~):zigs
+::        ==
+::        burned=`~
+::        events=`~
+::    ==
+::  ++  test-zz  ^-  test-txn
+::    :^  chain
+::      [sequencer default-town-id batch=1 eth-block-height=0]
+::    [caller-1 ~ id.p:pact:zigs [1 1.000.000] default-town-id 0]
+::    :*  gas=~  ::  we don't care
+::        errorcode=`%0
+::        ::  assert correct modified state
+::        ~
+::        burned=`~
+::        events=`~
+::    ==
 ::  ++  test-zzz-create-many-members  ^-  test-txn
 ::    =/  member-set  (make-pset:smart ~[0xdead 0xbeef 0xcafe 0xbabe])
 ::    =/  =calldata:smart  [%create 3 member-set]
@@ -269,5 +304,4 @@
 ::        burned=`~
 ::        events=`~
 ::    ==
-::  
 --
