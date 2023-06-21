@@ -1,6 +1,6 @@
 ::  account-abstracted nftDAO [UQ| DAO]
 /+  *zig-sys-smart
-/=  lib  /con/lib/nft-gang
+/=  lib  /con/lib/nftgang
 =,  lib
 |_  =context
 ++  write
@@ -14,27 +14,32 @@
           this.context
           this.context
           town.context
-          0  %nft-gang
+          0  %nftgang
           [collection.action threshold.action 0]
       ==
     `(result ~ item^~ ~ ~)
   =+  (need (scry-state our.action))
   =/  gang  (husk state - `this.context ~)
+  ~>  %after-gang-husk
   ?-    -.action
       %validate
     ::  scry out collection supply
     =+  (need (scry-state collection.noun.gang))
     =/  supply  supply.noun:(husk nft-metadata - `nft-contract `nft-contract)
+    ~>  %after-supply
     ?>  ?&  ~(apt py sigs.action)
+            ~>  %after-apt
             :: threshold * supply is greater/equal to (lent sigs)  
             =-  (gte ~(wyt py sigs.action) -)
             (div (mul threshold.noun.gang supply) 100)
+            ~>  %after-threshold
             (lte eth-block.context deadline.action)          
             ::  enforce that call is %execute to ourself
             =(contract.call.action this.context)
             =(p.calldata.call.action %execute)
         ==
     ::  
+    ~>  %before-typed
     =/  =typed-message
       :+  this.context  execute-jold-hash
     ::  signing msg: [(list call) collection-id nonce deadline]
@@ -51,6 +56,7 @@
             =/  item  (husk nft - `nft-contract `address)
             =(collection.noun.gang metadata.noun.item)
         ==
+      ~>  %after-all
     [call.action^~ [~ ~ ~ ~]]
   ::
       %execute

@@ -31,8 +31,9 @@
       properties=(pmap @tas @t)
       transferrable=?
   ==
-::
-++  nft-contract       0xc7ac.2b08.6748.221b.8628.3813.5875.3579.01d9.2bbe.e6e8.d385.f8c3.b801.84fc.00ae
+::  bacdun
+::  ++  nft-contract       0xc7ac.2b08.6748.221b.8628.3813.5875.3579.01d9.2bbe.e6e8.d385.f8c3.b801.84fc.00ae
+++  nft-contract       0xe2a7.62e9.0d4c.95bb.23e7.02ef.b273.3fa2.cd4e.7eef.b6ae.f1d6.eed1.f39f.48b5.0e54
 ++  execute-jold-hash  0x3f7b.2196.c694.57bd.a4f6.3120.3122.bd5d
 ::
 ::  ^-  @ux
